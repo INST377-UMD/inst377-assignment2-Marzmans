@@ -1,0 +1,40 @@
+<head>
+  <title>Home </title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <h1>Home</h1>
+
+  <ul class="nav">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="stocks.html">Stocks</a></li>
+    <li><a href="dogs.html">Dogs</a></li>
+  </ul>
+
+  <div class="center-buttons">
+    <button class="quirky-btn" onclick="location.href='stocks.html'">Go to Stocks</button>
+    <button class="quirky-btn" onclick="location.href='dogs.html'">Go to Dogs</button>
+  </div>
+
+  <div id="quote" class="quote-box">Loading quote...</div>
+
+  <div id="audio-controls">
+    <p>Say "Hello", "Change the color to [color]", or "Navigate to Dogs"</p>
+    <button class="quirky-btn" onclick="annyang.start()">Turn On Audio</button>
+    <button class="quirky-btn" onclick="annyang.abort()">Turn Off Audio</button>
+  </div>
+
+  <script>
+    fetch('https://zenquotes.io/api/random')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('quote').innerText = `"${data[0].q}" – ${data[0].a}`;
+      })
+      .catch(() => {
+        document.getElementById('quote').innerText = "Could not load quote.";
+      });
+  </script>
+</body>
+</html>

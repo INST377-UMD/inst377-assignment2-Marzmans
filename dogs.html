@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<head>
+  <title>Dogs</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <ul class="nav">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="stocks.html">Stocks</a></li>
+    <li><a href="dogs.html">Dogs</a></li>
+  </ul>
+
+  <h1 style="text-align:center;">Dog Carousel and Breed Info</h1>
+
+  <div class="swiper">
+    <div class="swiper-wrapper" id="dog-gallery">
+    </div>
+    <div class="swiper-button-prev"></div>
+    <div class="swiper-button-next"></div>
+    <div class="swiper-pagination"></div>
+  </div>
+
+  <h2 style="text-align:center;">Browse Dog Breed Info</h2>
+  <div id="dog-breed-buttons" class="center-buttons"></div>
+
+  <div id="audio-controls">
+    <p>Say "Load Dog Breed bulldog"</p>
+    <button class="css-button" onclick="annyang.start()">Turn On Audio</button>
+    <button class="css-button" onclick="annyang.abort()">Turn Off Audio</button>
+  </div>
+
+  <script>
+    // Carousel implementation with photos
+    fetch('https://dog.ceo/api/breeds/image/random/10')
+      .then(res => res.json())
+      .then(data => {
+        const gallery = document.getElementById('dog-gallery');
+        gallery.innerHTML = '';
+
+        data.message.forEach(imgUrl => {
+          const slide = document.createElement('div');
+          slide.classList.add('swiper-slide');
+          slide.innerHTML = `<img src="${imgUrl}" style="height: 400px; object-fit: cover; border-radius: 10px; width: 100%;">`;
+          gallery.appendChild(slide);
+        });
+
+        new Swiper('.swiper', {
+          slidesPerView: 1,
+          spaceBetween: 10,
+          loop: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      });
+
+    // Load breed buttons
+    fetch('https://dogapi.dog/api/v2/breeds')
+      .then(res => res.json())
+      .then(data => {
+        const buttonContainer = document.getElementById('dog-breed-buttons');
+        data.data.forEach(breed => {
+          const btn = document.createElement('button');
+          btn.textContent = breed.attributes.name;
+          btn.classList.add('css-button');
+          btn.onclick = () => window.loadBreedData(breed.attributes.name);
+          buttonContainer.appendChild(btn);
+        });
+      });
+
+    // Define globally so it's usable in Annyang since I had troubles with it earlier
+    window.loadBreedData = async function (breedName) {
+      const container = document.getElementById('breed-info');
+      container.innerHTML = "Loading...";
+
+      try {
+        const res = await fetch('https://dogapi.dog/api/v2/breeds');
+        const data = await res.json();
+        const breed = data.data.find(b => b.attributes.name.toLowerCase() === breedName.toLowerCase());
+
+        if (!breed) {
+          container.innerHTML = `<p>Breed "${breedName}" not found.</p>`;
+          return;
+        }
+
+        const attr = breed.attributes;
+        container.innerHTML = `
+          <div class="breed-card">
+            <h3>${attr.name}</h3>
+            <p>Description: ${attr.description}</p>
+            <p>Life Expectancy: ${attr.life.min}–${attr.life.max} years</p>
+          </div>`;
+      } catch (error) {
+        container.innerHTML = `<p>Error loading breed info</p>`;
+      }
+    };
+  </script>
+</body>
+</html>
